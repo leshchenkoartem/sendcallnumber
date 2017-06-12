@@ -1,4 +1,4 @@
-package com.example.artem.sendcallnumber.model.db;
+package com.example.artem.sendcallnumber.model.db.helpers;
 
 import android.content.Context;
 

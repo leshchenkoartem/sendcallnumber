@@ -3,7 +3,7 @@ package com.example.artem.sendcallnumber;
 import android.app.Application;
 
 import com.example.artem.sendcallnumber.model.AppState;
-import com.example.artem.sendcallnumber.model.db.HelperFactory;
+import com.example.artem.sendcallnumber.model.db.helpers.HelperFactory;
 
 /**
  * Created by artem on 09.06.17.

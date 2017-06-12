@@ -1,7 +1,5 @@
 package com.example.artem.sendcallnumber.model.netw;
 
-import com.example.artem.sendcallnumber.model.IncommingCall;
-
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.POST;

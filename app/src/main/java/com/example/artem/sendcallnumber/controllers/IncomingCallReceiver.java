@@ -3,24 +3,26 @@ package com.example.artem.sendcallnumber.controllers;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.example.artem.sendcallnumber.model.AppState;
-import com.example.artem.sendcallnumber.model.IncommingCall;
-import com.example.artem.sendcallnumber.model.db.HelperFactory;
+import com.example.artem.sendcallnumber.model.db.data.IncommingCall;
+import com.example.artem.sendcallnumber.model.db.helpers.HelperFactory;
 import com.example.artem.sendcallnumber.model.netw.ApiClient;
 import com.example.artem.sendcallnumber.model.netw.PhoneFromTo;
-import com.example.artem.sendcallnumber.view.ListActivity;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import retrofit2.Response;
 import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 /**
@@ -38,15 +40,26 @@ public class IncomingCallReceiver extends BroadcastReceiver {
                 lastState = phone_state;
                 if (TelephonyManager.EXTRA_STATE_RINGING.equals(phone_state)) {
                     String number = intent.getExtras().getString(TelephonyManager.EXTRA_INCOMING_NUMBER);
-                    Log.e("INCOM_CALL", "WORK !!!!!!!!!  " + number + "  - " + phone_state);
                     if(AppState.getInstance().isStoreLocal()){
-                        IncommingCall call = new IncommingCall();
-                        call.setPhone_number(number);
-                        call.setTime(new Date().getTime());
+
+                        IncommingCall call = findContact(context,number);
+                        try {
+                            Bundle bundle = intent.getExtras();
+                            call.setSimId(bundle.getInt("simId", -1));
+                        }catch (Exception ex){
+
+                        }
+                        Log.e("INCOM_CALL", "WORK !!!!!!!!!  " + call);
+
                         try {
                             List<IncommingCall> search = HelperFactory.getInstans().getDao(IncommingCall.class).queryForEq("phone_number",number);
                             if(search == null || search.size() ==0)
                                 HelperFactory.getInstans().getDao(IncommingCall.class).create(call);
+                            else {
+                                search.get(0).setTime(new Date().getTime());
+                                HelperFactory.getInstans().getDao(IncommingCall.class).update(search.get(0));
+                            }
+
 
                         } catch (SQLException e) {
                             e.printStackTrace();
@@ -57,8 +70,8 @@ public class IncomingCallReceiver extends BroadcastReceiver {
                                 .subscribeOn(Schedulers.io())
                                 .map(numb -> {
                                     PhoneFromTo phoneFromTo = new PhoneFromTo();
-                                    phoneFromTo.setFromNumber(AppState.getInstance().getMyPhoneNumber());
-                                    phoneFromTo.setToNumber(numb);
+                                    phoneFromTo.setFromNumber(numb);
+                                    phoneFromTo.setToNumber(AppState.getInstance().getMyPhoneNumber());
 
                                     Response response = null;
                                     try {
@@ -84,4 +97,40 @@ public class IncomingCallReceiver extends BroadcastReceiver {
             }
         }
     }
+
+    private IncommingCall findContact(Context context, String phone){
+        IncommingCall incommingCall = new IncommingCall();
+        String select = ContactsContract.CommonDataKinds.Phone.NUMBER+" LIKE ?";
+        Cursor contactsContract = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                new String[]{ContactsContract.CommonDataKinds.Phone._ID,
+                        ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                        ContactsContract.CommonDataKinds.Phone.NUMBER,
+                        ContactsContract.CommonDataKinds.Phone.LABEL,
+                        ContactsContract.CommonDataKinds.Phone.TYPE,
+                        ContactsContract.CommonDataKinds.Phone.PHOTO_URI}
+                , select
+                , new String[] { "%"+phone }
+                , ContactsContract.CommonDataKinds.Phone.NUMBER + " ASC");
+        if (contactsContract.moveToFirst()) {
+            int id = contactsContract.getInt(contactsContract.getColumnIndex(ContactsContract.CommonDataKinds.Phone._ID));
+            String name = contactsContract.getString(contactsContract.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+            String number = contactsContract.getString(contactsContract.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+            String photo = contactsContract.getString(contactsContract.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_URI));
+            int type = contactsContract.getInt(contactsContract.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE));
+            String customLabel = contactsContract.getString(contactsContract.getColumnIndex(ContactsContract.CommonDataKinds.Phone.LABEL));
+            CharSequence typeLabel = ContactsContract.CommonDataKinds.Email.getTypeLabel(context.getResources(), type, customLabel);
+            String phoneType = typeLabel.toString();
+            incommingCall.setPhone_number(number);
+            incommingCall.setTime(new Date().getTime());
+            incommingCall.setPhoto_uri(photo);
+            incommingCall.setName(name);
+            incommingCall.setPhone_type(phoneType);
+            return incommingCall;
+        }else {
+            incommingCall.setPhone_number(phone);
+            incommingCall.setTime(new Date().getTime());
+        }
+        return incommingCall;
+    }
+
 }

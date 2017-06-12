@@ -1,9 +1,13 @@
 package com.example.artem.sendcallnumber.view;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -14,6 +18,9 @@ import android.widget.EditText;
 
 import com.example.artem.sendcallnumber.R;
 import com.example.artem.sendcallnumber.model.AppState;
+import com.example.artem.sendcallnumber.model.db.data.IncommingCall;
+
+import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -37,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
     Button saveBtn;
 
     boolean b;
+    @BindView(R.id.phone_edit2)
+    EditText phoneEdit2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,14 +58,19 @@ public class MainActivity extends AppCompatActivity {
 
         pointEdit.setText(AppState.getInstance().getEndPoint());
         phoneEdit.setText(AppState.getInstance().getMyPhoneNumber());
+        String phone2 = AppState.getInstance().getMyPhoneNumber2();
+        if(phone2!=null && !phone2.isEmpty()){
+            phoneEdit2.setVisibility(View.VISIBLE);
+            phoneEdit2.setText(phone2);
+        }
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if(!b) {
-            b=true;
+        if (!b) {
+            b = true;
             int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE);
             if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE}, 100);
@@ -86,17 +100,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void saveClick(){
+    private void saveClick() {
         AppState.getInstance().setStoreLocal(storelocalChb.isChecked());
         AppState.getInstance().setSilendMode(silentModeChb.isChecked());
         AppState.getInstance().setUseService(useserviceChb.isChecked());
         AppState.getInstance().setEndPoint(pointEdit.getText().toString());
         AppState.getInstance().setMyPhoneNumber(phoneEdit.getText().toString());
         AppState.getInstance().commitChanges();
+        finish();
     }
-    private void cancelClick(){
+
+    private void cancelClick() {
         Intent intent = new Intent(this, ListActivity.class);
         startActivity(intent);
 
     }
+
+
+
 }

@@ -1,11 +1,10 @@
-package com.example.artem.sendcallnumber.model.db;
+package com.example.artem.sendcallnumber.model.db.helpers;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.example.artem.sendcallnumber.model.IncommingCall;
+import com.example.artem.sendcallnumber.model.db.data.IncommingCall;
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
-import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
