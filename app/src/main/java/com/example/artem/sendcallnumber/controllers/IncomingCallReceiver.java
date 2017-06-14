@@ -94,7 +94,7 @@ public class IncomingCallReceiver extends BroadcastReceiver {
                     PhoneFromTo phoneFromTo = new PhoneFromTo();
                     phoneFromTo.setFromNumber(numb);
                     phoneFromTo.setToNumber(AppState.getInstance().getMyPhoneNumber());
-
+                    phoneFromTo.setDateTime(new Date().getTime());
                     Response response = null;
                     try {
                         response = ApiClient.getInstance().send(phoneFromTo).execute();

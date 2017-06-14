@@ -6,6 +6,7 @@ package com.example.artem.sendcallnumber.model.netw;
 
 public class PhoneFromTo {
     String FromNumber,ToNumber;
+    long DateTime;
 
     public String getFromNumber() {
         return FromNumber;
@@ -21,5 +22,13 @@ public class PhoneFromTo {
 
     public void setToNumber(String toNumber) {
         ToNumber = toNumber;
+    }
+
+    public long getDateTime() {
+        return DateTime;
+    }
+
+    public void setDateTime(long dateTime) {
+        DateTime = dateTime;
     }
 }

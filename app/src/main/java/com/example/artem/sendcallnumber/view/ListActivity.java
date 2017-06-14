@@ -48,7 +48,7 @@ public class ListActivity extends AppCompatActivity {
     @BindView(R.id.phoneList)
     RecyclerView phoneList;
     List<IncommingCall> incommingCalls;
-    private List<String> selectedChList = new ArrayList<>();
+    private List<IncommingCall> selectedChList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,10 +86,10 @@ public class ListActivity extends AppCompatActivity {
     private void removeClick() {
         Observable.from(selectedChList)
                 //.subscribeOn(Schedulers.newThread())
-                .map(phone -> {
+                .map(incommingCall -> {
                     List l = null;
                     try {
-                        l = HelperFactory.getInstans().getDao(IncommingCall.class).queryForEq("phone_number", phone);
+                        l = HelperFactory.getInstans().getDao(IncommingCall.class).queryForEq("phone_number", incommingCall.getPhone_number());
                         HelperFactory.getInstans().getDao(IncommingCall.class).delete(l);
                     } catch (SQLException e) {
                         e.printStackTrace();
@@ -107,16 +107,18 @@ public class ListActivity extends AppCompatActivity {
     private void sendClick() {
         Observable.from(selectedChList)
                 .subscribeOn(Schedulers.io())
-                .map(phone -> {
+                .map(incommingCall -> {
                     PhoneFromTo phoneFromTo = new PhoneFromTo();
-                    phoneFromTo.setFromNumber(AppState.getInstance().getMyPhoneNumber());
-                    phoneFromTo.setToNumber(phone);
+                    phoneFromTo.setFromNumber(incommingCall.getPhone_number());
+                    phoneFromTo.setToNumber(AppState.getInstance().getMyPhoneNumber());
+                    phoneFromTo.setDateTime(incommingCall.getTime());
+
 
                     Response response = null;
                     try {
                         response = ApiClient.getInstance().send(phoneFromTo).execute();
                         if (response.isSuccessful())
-                            return phone;
+                            return incommingCall;
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -129,7 +131,7 @@ public class ListActivity extends AppCompatActivity {
                 .subscribe(s -> {
                             if (s != null) {
                                 try {
-                                    List l = HelperFactory.getInstans().getDao(IncommingCall.class).queryForEq("phone_number", s);
+                                    List l = HelperFactory.getInstans().getDao(IncommingCall.class).queryForEq("phone_number", s.getPhone_number());
                                     HelperFactory.getInstans().getDao(IncommingCall.class).delete(l);
                                 } catch (SQLException e) {
                                     e.printStackTrace();
@@ -182,9 +184,9 @@ public class ListActivity extends AppCompatActivity {
             holder.checkBox.setChecked(false);
             holder.checkBox.setOnCheckedChangeListener((compoundButton, b) -> {
                 if (b) {
-                    selectedChList.add(holder.phoneNumberTv.getText().toString());
+                    selectedChList.add(incommingCalls.get(position));
                 } else {
-                    selectedChList.remove(holder.phoneNumberTv.getText().toString());
+                    selectedChList.remove(incommingCalls.get(position));
                 }
 
             });
