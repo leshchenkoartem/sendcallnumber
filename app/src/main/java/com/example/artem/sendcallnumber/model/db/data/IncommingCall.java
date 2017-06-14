@@ -56,7 +56,7 @@ public class IncommingCall {
     }
 
     public String getPhone_type() {
-        return phone_type;
+        return phone_type!=null?phone_type:"";
     }
 
     public void setPhone_type(String phone_type) {

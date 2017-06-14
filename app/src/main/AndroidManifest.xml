@@ -27,6 +27,8 @@
         <receiver android:name=".controllers.IncomingCallReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.PHONE_STATE" />
+                <action android:name="android.intent.action.PHONE_STATE2" />
+
             </intent-filter>
         </receiver>
     </application>

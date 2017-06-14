@@ -11,6 +11,7 @@ import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -77,7 +78,14 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
+    @OnClick(R.id.button)
+    public void onBClicked(View view) {
+        Intent intent = new Intent();
+        intent.setAction("android.intent.action.PHONE_STATE2");
+        intent.putExtra(TelephonyManager.EXTRA_INCOMING_NUMBER,"321");
+        intent.putExtra(TelephonyManager.EXTRA_STATE,TelephonyManager.EXTRA_STATE_RINGING);
+        sendBroadcast(intent);
+    }
     @OnClick({R.id.silent_mode_chb, R.id.storelocal_chb, R.id.point_edit, R.id.phone_edit, R.id.useservice_chb, R.id.cancelBtn, R.id.saveBtn})
     public void onViewClicked(View view) {
         switch (view.getId()) {
